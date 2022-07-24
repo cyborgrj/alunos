@@ -23,7 +23,7 @@ const dbName = "fiber-hrms"
 const mongoURI = "mongodb://localhost:27017/" + dbName
 
 type Aluno struct {
-	ID             string `json:"id,omitempty" bson:"_id, omitempty"`
+	ID             string `json:"id,omitempty" bson:"_id,omitempty"`
 	Nome           string `json:"name"`
 	DataNascimento string `json:"datanasc"`
 	Serie          string `json:"serie"`
