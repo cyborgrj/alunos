@@ -2,7 +2,6 @@ package main
 
 import (
 	"context"
-	"fmt"
 	"log"
 	"time"
 
@@ -26,11 +25,11 @@ const mongoURI = "mongodb+srv://cyborg_rj:3m193mRJA123@cluster0.6biqi.mongodb.ne
 type Aluno struct {
 	ID             string `json:"id,omitempty" bson:"_id,omitempty"`
 	Nome           string `json:"name" bson:"name"`
-	DataNascimento string `json:"datanasc"`
-	Serie          string `json:"serie"`
-	Email          string `json:"email"`
+	DataNascimento string `json:"datanasc" bson:"datanasc"`
+	Serie          string `json:"serie" bson:"serie"`
+	Email          string `json:"email" bson:"email"`
 	Idade          int    `json:"idade,omitempty" bson:"idade,omitempty"`
-	Cpf            string `json:"cpf"`
+	Cpf            string `json:"cpf" bson:"cpf"`
 }
 
 func age(birthdate, today time.Time) int {
@@ -54,7 +53,6 @@ func insereIdadeAluno(a *Aluno) {
 	hoje := time.Now()
 	datanasc, _ := time.Parse("02/01/2006", a.DataNascimento)
 	(*a).Idade = age(hoje, datanasc)
-	fmt.Println("Idade", (*a).Idade)
 }
 
 func Connect() error {
@@ -101,8 +99,6 @@ func main() {
 
 		for _, a := range alunos {
 			insereIdadeAluno(&a)
-			fmt.Println("Idade ponteiro de A antes de retornar o JSON", &a.Idade)
-			fmt.Println("Idade antes de retornar o JSON", a.Idade)
 		}
 
 		return ctx.JSON(alunos)
