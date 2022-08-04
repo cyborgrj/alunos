@@ -186,7 +186,7 @@ func main() {
 			return ctx.SendStatus(400)
 		}
 
-		query := bson.D{{Key: "_id", Value: alunoID}}
+		query := bson.M{"_id": alunoID}
 		result, err := mg.Db.Collection("alunos").DeleteOne(ctx.Context(), &query)
 
 		if err != nil {
