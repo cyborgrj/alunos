@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"fmt"
 	"log"
 	"time"
 
@@ -19,15 +20,41 @@ type MongoInstance struct {
 
 var mg MongoInstance
 
-const dbName = "fiber-hrms"
-const mongoURI = "mongodb://localhost:27017/" + dbName
+const dbName = "Cluster0"
+const mongoURI = "mongodb+srv://cyborg_rj:3m193mRJA123@cluster0.6biqi.mongodb.net/?retryWrites=true&w=majority"
 
 type Aluno struct {
 	ID             string `json:"id,omitempty" bson:"_id,omitempty"`
-	Nome           string `json:"name"`
+	Nome           string `json:"name" bson:"name"`
 	DataNascimento string `json:"datanasc"`
 	Serie          string `json:"serie"`
 	Email          string `json:"email"`
+	Idade          int    `json:"idade,omitempty" bson:"idade,omitempty"`
+	Cpf            string `json:"cpf"`
+}
+
+func age(birthdate, today time.Time) int {
+	today = today.In(birthdate.Location())
+	ty, tm, td := today.Date()
+	today = time.Date(ty, tm, td, 0, 0, 0, 0, time.UTC)
+	by, bm, bd := birthdate.Date()
+	birthdate = time.Date(by, bm, bd, 0, 0, 0, 0, time.UTC)
+	if today.Before(birthdate) {
+		return 0
+	}
+	age := ty - by
+	anniversary := birthdate.AddDate(age, 0, 0)
+	if anniversary.After(today) {
+		age--
+	}
+	return age
+}
+
+func insereIdadeAluno(a *Aluno) {
+	hoje := time.Now()
+	datanasc, _ := time.Parse("02/01/2006", a.DataNascimento)
+	(*a).Idade = age(hoje, datanasc)
+	fmt.Println("Idade", (*a).Idade)
 }
 
 func Connect() error {
@@ -70,6 +97,12 @@ func main() {
 
 		if err := cursor.All(ctx.Context(), &alunos); err != nil {
 			return ctx.Status(500).SendString(err.Error())
+		}
+
+		for _, a := range alunos {
+			insereIdadeAluno(&a)
+			fmt.Println("Idade ponteiro de A antes de retornar o JSON", &a.Idade)
+			fmt.Println("Idade antes de retornar o JSON", a.Idade)
 		}
 
 		return ctx.JSON(alunos)
@@ -118,6 +151,7 @@ func main() {
 		}
 
 		query := bson.D{{Key: "_id", Value: alunoID}}
+
 		update := bson.D{
 			{Key: "$set",
 				Value: bson.D{
@@ -125,6 +159,7 @@ func main() {
 					{Key: "datanasc", Value: aluno.DataNascimento},
 					{Key: "serie", Value: aluno.Serie},
 					{Key: "email", Value: aluno.Email},
+					{Key: "cpf", Value: aluno.Cpf},
 				},
 			},
 		}
